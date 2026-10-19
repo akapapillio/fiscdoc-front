@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/auth';
+const API_URL = 'http://localhost:3000/fiscdocback/auth';
 
 export const authService = {
   async login(email: string, password: string) {
