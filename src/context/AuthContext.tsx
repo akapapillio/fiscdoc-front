@@ -16,34 +16,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
-  // À chaque fois que le token change (ou au chargement de la page), on récupère le profil
+  // Vérification de session uniquement au rechargement initial (F5)
   useEffect(() => {
-    if (token) {
-      authService.getMe(token)
-        .then(userData => {
+    const initAuth = async () => {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        try {
+          const userData = await authService.getMe(storedToken);
           setUser(userData);
-          setIsLoading(false);
-        })
-        .catch(() => {
-          logout(); // Si le token est expiré, on nettoie
-          setIsLoading(false);
-        });
-    } else {
+          setToken(storedToken);
+        } catch {
+          logout();
+        }
+      }
       setIsLoading(false);
-    }
-  }, [token]);
+    };
+
+    initAuth();
+  }, []);
 
   const login = async (email: string, password: string) => {
-    const data = await authService.login(email, password);
-    localStorage.setItem('token', data.access_token);
-    setToken(data.access_token);
-    // Le useEffect va détecter le changement de token et récupérer le `user`
+    setIsLoading(true);
+    try {
+      // 1. Récupération du token
+      const data = await authService.login(email, password);
+      const accessToken = data.access_token || data.token;
+
+      // 2. Récupération immédiate du profil de l'agent
+      const userData = await authService.getMe(accessToken);
+
+      // 3. Persistance synchrone
+      localStorage.setItem('token', accessToken);
+      
+      // 4. Mise à jour de l'état React
+      setToken(accessToken);
+      setUser(userData);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
+    setIsLoading(false);
   };
 
   return (

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -38,7 +39,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Email (ex: jean.dupont@test.com)</label>
+            <label style={styles.label}>Email</label>
             <input 
               type="email" 
               value={email} 
@@ -49,7 +50,7 @@ export default function Login() {
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Mot de passe (ex: motdepasse_bidon)</label>
+            <label style={styles.label}>Mot de passe </label>
             <input 
               type="password" 
               value={password} 
@@ -64,12 +65,12 @@ export default function Login() {
           </button>
         </form>
         
-        {/* Lien administrateur discret en bas, comme demandé */}
-        <div style={styles.adminFooter}>
-          <a href="/admin-login" onClick={(e) => e.preventDefault()} style={styles.adminLink}>
-            Accès Administrateur
-          </a>
-        </div>
+      {/* Lien administrateur discret en bas */}
+      <div style={styles.adminFooter}>
+        <Link to="/bo/login" style={styles.adminLink}>
+          Accès Administrateur
+        </Link>
+      </div>
       </div>
     </div>
   );
