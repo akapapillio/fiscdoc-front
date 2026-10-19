@@ -9,7 +9,7 @@ export default function Sidebar() {
   };
 
   const navItems = [
-    { to: '/', label: 'Tableau de bord', icon: '📊' },
+    { to: '/', label: 'Rapide', icon: '💼' },
     { to: '/dossiers/nouveau', label: 'Nouveau dossier', icon: '➕' },
     { to: '/documents', label: 'Mes Documents', icon: '📁' },
     { to: '/dossiers/list', label: 'Recherche', icon: '🔍' },
