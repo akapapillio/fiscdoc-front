@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { dossierService } from '../../services/dossier.service';
+import { divisionService } from '../../services/division.service'; 
 
 // MOCK des divisions pour le menu déroulant de la modale de transfert
 // (À terme, cela viendra d'une route GET /divisions)
@@ -20,6 +21,8 @@ export default function Dashboard() {
   const [dossiers, setDossiers] = useState<any[]>([]);
   const [isLoadingDossiers, setIsLoadingDossiers] = useState(true);
   
+  //div
+  const [divisions, setDivisions] = useState<any[]>([]);
   // Modale de transfert
   const [transferModal, setTransferModal] = useState<{ isOpen: boolean, dossierId: number | null }>({ isOpen: false, dossierId: null });
   const [transferData, setTransferData] = useState({ destination_division_id: '', new_status: 'en_cours', comment: '' });
@@ -41,9 +44,23 @@ export default function Dashboard() {
     }
   };
 
+  
+const fetchDivisions = async () => {
+  // On annule la requête si le token n'est pas encore là
+  if (!token) return; 
+
+  try {
+    const divisionsData = await divisionService.getAll(token);
+    setDivisions(divisionsData);
+  } catch (error) {
+    console.error("Erreur lors du chargement des divisions:", error);
+  }
+};
+
   // Se déclenche à l'ouverture de la page
   useEffect(() => {
     fetchDossiers();
+    fetchDivisions();
   }, [token, user]);
 
   // --- GESTIONNAIRES D'ÉVÉNEMENTS ---
@@ -216,7 +233,7 @@ export default function Dashboard() {
                   onChange={(e) => setTransferData({...transferData, destination_division_id: e.target.value})}
                 >
                   <option value="">Sélectionnez une division...</option>
-                  {MOCK_DIVISIONS.map(div => (
+                  {divisions.map(div => (
                     <option key={div.id} value={div.id}>{div.name}</option>
                   ))}
                 </select>
