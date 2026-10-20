@@ -2,35 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { employeeService } from '../../services/employee.service';
 import { divisionService } from '../../services/division.service';
 
-// Mock des rôles (ces rôles sont fixes dans votre base de données selon le script SQL)
 const MOCK_ROLES = [
   { id: 1, label: 'Administrateur Système' },
-  { id: 2, label: 'Acteur Budgétaire / Régisseur' },
-  { id: 3, label: 'Employé / Agent Standard' },
-  { id: 4, label: 'Agent d\'accueil' },
-  { id: 5, label: 'Chef de division' }
+  { id: 2, label: 'Employé / Agent Standard' },
+  // { id: 4, label: 'Agent d\'accueil' },
+  { id: 3, label: 'Chef de division' }
 ];
 
 export default function EmployeesBo() {
   const token = localStorage.getItem('bo_token') || '';
   
-  // --- ÉTATS ---
   const [employees, setEmployees] = useState<any[]>([]);
-  const [divisions, setDivisions] = useState<any[]>([]); // Nouvel état pour les vraies divisions
+  const [divisions, setDivisions] = useState<any[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
+  
+  // NOUVEAU : État pour gérer le message d'erreur
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Formulaire
   const [formData, setFormData] = useState({
     first_name: '', last_name: '', email: '', matricule: '', password: '', is_active: true,
     division_id: '', role_id: ''
   });
 
-  // --- CHARGEMENT DES DONNÉES ---
   const fetchData = async () => {
     try {
-      // On charge les employés ET les divisions en parallèle
       const [empData, divData] = await Promise.all([
         employeeService.getAll(token),
         divisionService.getAll(token)
@@ -47,8 +44,8 @@ export default function EmployeesBo() {
     // eslint-disable-next-line
   }, []);
 
-  // --- ACTIONS ---
   const handleOpenModal = (employee: any = null) => {
+    setErrorMessage(null); // On efface les erreurs précédentes à l'ouverture
     if (employee) {
       setEditingEmployee(employee);
       setFormData({
@@ -56,7 +53,7 @@ export default function EmployeesBo() {
         last_name: employee.last_name, 
         email: employee.email, 
         matricule: employee.matricule || '',
-        password: '', // Toujours vide à l'édition (Bcrypt)
+        password: '',
         is_active: employee.is_active,
         division_id: employee.active_assignment?.division_id || '',
         role_id: employee.active_assignment?.role_id || ''
@@ -72,23 +69,29 @@ export default function EmployeesBo() {
   };
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingEmployee) {
-        // Le backend gère l'historisation des affectations si la division ou le rôle a changé
-        await employeeService.update(token, editingEmployee.id, formData);
-      } else {
-        await employeeService.create(token, formData);
-      }
-      setIsModalOpen(false);
-      fetchData(); // Rafraîchir le tableau
-    } catch (error) {
-      console.error("Erreur d'enregistrement :", error);
-      alert("Erreur lors de l'enregistrement de l'employé.");
-    }
-  };
+      e.preventDefault();
+      setErrorMessage(null); // On réinitialise l'erreur
 
-  // Fonctions d'affichage pour le tableau
+      try {
+        if (editingEmployee) {
+          await employeeService.update(token, editingEmployee.id, formData);
+        } else {
+          await employeeService.create(token, formData);
+        }
+        setIsModalOpen(false);
+        fetchData(); // Rafraîchir le tableau
+      } catch (error: any) {
+        console.error("Erreur d'enregistrement :", error);
+        
+        // LA CORRECTION EST ICI : on lit directement error.message
+        if (error && error.message) {
+          setErrorMessage(error.message);
+        } else {
+          setErrorMessage("Erreur lors de l'enregistrement de l'employé. Veuillez vérifier votre connexion.");
+        }
+      }
+    };
+
   const getDivisionName = (divId: number) => divisions.find(d => d.id === divId)?.name || 'Non assigné';
   const getRoleName = (roleId: number) => MOCK_ROLES.find(r => r.id === roleId)?.label || 'Aucun rôle';
 
@@ -147,7 +150,6 @@ export default function EmployeesBo() {
         </table>
       </div>
 
-      {/* MODALE DE CRÉATION / ÉDITION */}
       {isModalOpen && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
@@ -155,9 +157,15 @@ export default function EmployeesBo() {
               {editingEmployee ? 'Modifier l\'employé' : 'Nouvel employé'}
             </h2>
             
+            {/* NOUVEAU : Affichage conditionnel de la bannière d'erreur */}
+            {errorMessage && (
+              <div style={styles.errorBanner}>
+                <strong>⚠️ Erreur : </strong> {errorMessage}
+              </div>
+            )}
+            
             <form onSubmit={handleSave}>
               <div style={styles.formGrid}>
-                {/* IDENTITÉ */}
                 <div style={styles.formSection}>
                   <h4 style={styles.sectionTitle}>Identité & Connexion</h4>
                   
@@ -193,7 +201,6 @@ export default function EmployeesBo() {
                   </label>
                 </div>
 
-                {/* AFFECTATION (employee_assignments) */}
                 <div style={styles.formSection}>
                   <h4 style={styles.sectionTitle}>Affectation Active</h4>
                   <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 15px 0' }}>Définit où travaille l'agent et ses droits métiers.</p>
@@ -228,7 +235,6 @@ export default function EmployeesBo() {
   );
 }
 
-// --- STYLES ---
 const styles: { [key: string]: React.CSSProperties } = {
   container: { padding: '20px' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' },
@@ -261,5 +267,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   
   modalActions: { display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #e5e7eb', paddingTop: '20px' },
   cancelBtn: { padding: '10px 16px', backgroundColor: 'white', color: '#4b5563', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' },
-  saveBtn: { padding: '10px 16px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }
+  saveBtn: { padding: '10px 16px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' },
+
+  // NOUVEAU STYLE : Bannière d'erreur
+  errorBanner: { backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #f87171', fontSize: '14px' }
 };
