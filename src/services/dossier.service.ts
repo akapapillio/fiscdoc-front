@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3000/fiscdocback/dossiers';
+// const API_URL = 'http://localhost:3000/fiscdocback/dossiers';
+const API_URL = `${import.meta.env.VITE_API_URL}/dossiers`;
 
 export const dossierService = {
   // On met à jour le type attendu pour correspondre à notre backend
