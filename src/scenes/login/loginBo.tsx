@@ -12,7 +12,7 @@ export default function LoginBo() {
       localStorage.setItem('bo_token', 'fake-admin-token');
       navigate('/bo');
     } else {
-      setError('Identifiants incorrects. Utilisez admin / admin.');
+      setError('Identifiants incorrects .');
     }
   };
 
