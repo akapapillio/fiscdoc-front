@@ -133,11 +133,11 @@ const fetchDivisions = async () => {
           <p style={styles.cardDesc}>Enregistrer une nouvelle entrée</p>
         </button>
 
-        <button style={styles.actionCard} onClick={() => handleAction('CREATE')}>
+        {/* <button style={styles.actionCard} onClick={() => handleAction('CREATE')}>
           <div style={{ ...styles.iconWrapper, backgroundColor: '#e0e7ff', color: '#3730a3' }}>🚀</div>
           <h3 style={styles.cardTitle}>Initier un transfert</h3>
           <p style={styles.cardDesc}>Nouvelle procédure d'envoi</p>
-        </button>
+        </button> */}
 
         <button style={styles.actionCard} onClick={() => handleAction('HISTORY')}>
           <div style={{ ...styles.iconWrapper, backgroundColor: '#fef3c7', color: '#92400e' }}>⏱️</div>
