@@ -165,7 +165,7 @@ const fetchDivisions = async () => {
               <thead>
                 <tr>
                   <th style={styles.th}>Référence</th>
-                  <th style={styles.th}>Type</th>
+                  {/* <th style={styles.th}>Type</th> */}
                   <th style={styles.th}>Date d'arrivée</th>
                   <th style={styles.th}>Statut</th>
                   <th style={styles.th}>Actions</th>
@@ -179,7 +179,7 @@ const fetchDivisions = async () => {
                   return (
                     <tr key={dossier.id} style={styles.tr}>
                       <td style={{...styles.td, fontWeight: 'bold'}}>{dossier.reference}</td>
-                      <td style={styles.td}>{dossier.type}</td>
+                      {/* <td style={styles.td}>{dossier.type}</td> */}
                       <td style={{...styles.td, color: '#6b7280'}}>{formattedDate}</td>
                       <td style={styles.td}>
                         <span style={{ ...styles.badge, backgroundColor: statusStyle.bg, color: statusStyle.text }}>
