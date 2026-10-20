@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3000/fiscdocback/divisions';
+// const API_URL = 'http://localhost:3000/fiscdocback/divisions';
+const API_URL = `${import.meta.env.VITE_API_URL}/divisions`;
 
 export const divisionService = {
   async getAll(token: string) {

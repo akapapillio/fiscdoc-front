@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3000/fiscdocback/auth';
+// const API_URL = 'http://localhost:3000/fiscdocback/auth';
+const API_URL = `${import.meta.env.VITE_API_URL}/employees`;
 
 export const authService = {
   async login(email: string, password: string) {
